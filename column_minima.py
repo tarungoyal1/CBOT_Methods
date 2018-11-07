@@ -1,8 +1,8 @@
 def main():
 
-    # matrix = [[2,7,4],[3,3,1],[5,4,7],[1,6,2]]
-    # demand = [7, 9, 18]
-    # supply = [5,8,7,14]
+    # matrix = [[4,2,7,5,2],[3,5,6,11,12],[7,1,6,7,4],[8,5,9,9,15]]
+    # demand = [30,20,15,7,3]
+    # supply = [20,10,30,15]
 
 
     rows = int(input("Enter no. of rows:"))
@@ -19,29 +19,31 @@ def main():
         return
 
     cutrows = []
-    cutcols = []
-
     allocatedCells = []
-    while sum(demand)!=0 and sum(supply)!=0:
-        lowestCostCell = getLowestCostCellIndex(matrix, cutrows, cutcols, demand, supply)
+    j = 0
+    while j<len(matrix[0]):
+        lowestCostCell = getLowestCostCellInCol(matrix, cutrows, demand, supply, j)
         if supply[lowestCostCell[0]] == demand[lowestCostCell[1]]:
             allocatedCells.append({supply[lowestCostCell[0]]: lowestCostCell})
             demand[lowestCostCell[1]] = 0
             supply[lowestCostCell[0]] = 0
             cutrows.append(lowestCostCell[0])
-            cutcols.append(lowestCostCell[1])
         elif supply[lowestCostCell[0]] < demand[lowestCostCell[1]]:
-            #     means allocate supply value, make it 0 and reduce it from demand
             allocatedCells.append({supply[lowestCostCell[0]]: lowestCostCell})
             demand[lowestCostCell[1]] -= supply[lowestCostCell[0]]
             supply[lowestCostCell[0]] = 0
             cutrows.append(lowestCostCell[0])
+            # calling continue is crucial, as it makes control stays at same col until full demand is allocated
+            continue
         else:
             allocatedCells.append({demand[lowestCostCell[1]]: lowestCostCell})
             supply[lowestCostCell[0]] -= demand[lowestCostCell[1]]
             demand[lowestCostCell[1]] = 0
-            cutcols.append(lowestCostCell[1])
+            #     don't cut row here because only demand is fully assigned not supply
 
+        j += 1
+
+    print(allocatedCells)
     mincost = 0
     print("Inital basic feasible solution:")
     for entry in allocatedCells:
@@ -52,61 +54,54 @@ def main():
 
     print("Minimum cost  = " + str(mincost))
 
-def getLowestCostCellIndex(matrix, cutrows, cutcols, demand, supply):
-    # 1- only add costs that fall in uncut rows and cols
-    i,j=0,0
-    temp = [[-1 for _ in range(0, len(matrix[0]))] for _ in range(0, len(matrix))]
-    while i< len(matrix):
-        j=0
-        while j<len(matrix[0]):
-            if i in cutrows or j in cutcols:
-                temp[i][j] = -1
-            else:
-                temp[i][j] = matrix[i][j]
-            j+=1
-        i+=1
 
-    # print(temp)
-    # 2- get the cell index which has least cost, but only index of one cell is inserted
-    l=[-1,-1]
-    m=100000
+def getLowestCostCellInCol(matrix, cutrows, demand, supply, colIndex):
     i=0
-    while i<len(matrix):
-        j=0
-        while j<len(matrix[0]):
-            if temp[i][j]==-1:
-                j+=1
+    l = [-1, -1]
+    m = 100000
+
+    while i < len(matrix):
+            if i in cutrows:
+                i += 1
                 continue
-            if temp[i][j]<m:
+            if matrix[i][colIndex]<m:
+                m=matrix[i][colIndex]
+                # print(m)
                 l[0] = i
-                l[1] = j
-                m = temp[i][j]
-            j+=1
-        i+=1
+                l[1] = colIndex
+            i+=1
+    # print(l)
 
-    # 3-till now l contains index of only 1 cell having least cost
-    least = [list([l[0],l[1]])]
+    # means all rows are cut so min cell can not be obtained in this row
+    if l[0]==-1 or l[1]==-1:
+        return l
 
-    # here, insert the indexes (as list) of those cells having same minimum cost
-    # insert other indexes having same min. costs by matching the cost of only inserted in l
-    i,j = 0,0
-    while i< len(matrix):
-        j=0
-        while j<len(matrix[0]):
-            if (i!=l[0] and j!=l[1]) and temp[i][j]!=-1:
-                if temp[l[0]][l[1]]==temp[i][j]:
+    # till now l contains index of only 1 cell having least cost
 
-                    least.append([i,j])
-            j+=1
-        i+=1
+    least = [list([l[0], l[1]])]
+
+    # now check if two or more cells has same minimum cost
+    i=0
+    while i < len(matrix):
+        if i in cutrows:
+            i += 1
+            continue
+        if i!=l[1] and (matrix[i][colIndex] == matrix[l[0]][l[1]]):
+            least.append([i, colIndex])
+        i += 1
 
     # now least contains indexes of all cells as list that has same min. cost,
-    # but only return the index of that cell where max allocation of min(supply, demand) can be done
+    # but only return the index of that cell where max allocation of min(supply, demand) can be done in the cell of this row
+
     mini = []
     for lindex in least:
+        if lindex[0]==-1 or lindex[1]==-1:
+            continue
         mini.append(min(supply[lindex[0]], demand[lindex[1]]))
-
     return least[mini.index(max(mini))]
+
+
+
 
 if __name__ == "__main__":
     main()
