@@ -1,7 +1,6 @@
 from vam_method import calculateBFSusingVAM, calculateMincost
 from time import sleep
 from collections import Counter
-from pprint import pprint
 
 
 def main():
@@ -13,21 +12,19 @@ def main():
     # demand = [5,8,7,14]
     # supply = [7,9,18]
     #
-    matrix = [[2,7,4],[3,3,1],[5,4,7],[1,6,2]]
-    demand = [7,9,18]
-    supply = [5,8,7,14]
+    # matrix = [[2,7,4],[3,3,1],[5,4,7],[1,6,2]]
+    # demand = [7,9,18]
+    # supply = [5,8,7,14]
 
 
-    # rows = int(input("Enter no. of rows:"))
-    #
-    # matrix = []
-    # for i in range(0, rows):
-    #     matrix.append([int(x) for x in str(input("Populate row" + str(i + 1) + ":")).split()])
-    #
-    # demand = [int(x) for x in str(input("Enter demand list:")).split()]
-    # supply = [int(x) for x in str(input("Enter supply list:")).split()]
+    rows = int(input("Enter no. of rows:"))
 
-    allCellsIndexList = []
+    matrix = []
+    for i in range(0, rows):
+        matrix.append([int(x) for x in str(input("Populate row" + str(i + 1) + ":")).split()])
+
+    demand = [int(x) for x in str(input("Enter demand list:")).split()]
+    supply = [int(x) for x in str(input("Enter supply list:")).split()]
 
     allocatedCellsDict = calculateBFSusingVAM(matrix, demand, supply)
 
@@ -35,11 +32,16 @@ def main():
 
     print("Minimum cost by VAM = " + str(mincost))
 
+    testOptimalityMODI(matrix, allocatedCellsDict)
 
-    # print("Testing optimality using MODI method")
-    # for i in range(0,3):
-    #     print(".")
-    #     sleep(1)
+def testOptimalityMODI(matrix, allocatedCellsDict):
+
+    print("Testing optimality using MODI method")
+    for i in range(0,3):
+        print(".")
+        sleep(1)
+
+    allCellsIndexList = []
 
     # these list represent the value of ui and vj, respectively..intially all set to 0
     u = [None for _ in range(0, len(matrix))]
@@ -137,8 +139,6 @@ def main():
         print("B.F.S is not optimal..can be further improved")
     else:
         print("B.F.S is optimal")
-
-
 
 if __name__ == "__main__":
     main()
