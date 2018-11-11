@@ -18,43 +18,11 @@ def main():
     demand = [int(x) for x in str(input("Enter demand list:")).split()]
     supply = [int(x) for x in str(input("Enter supply list:")).split()]
 
-    if sum(demand) != sum(supply):
-        print("!---Problem is UnBalanced---!")
-        return
+    allocatedCells = calculateBFSusingVAM(matrix, demand, supply)
 
-    cutrows = []
-    cutcols = []
+    mintpcost = calculateMincost(matrix, allocatedCells)
 
-    allocatedCells = []
-    while sum(demand) != 0 and sum(supply) != 0:
-        lowestCostCell = getCellForAllocation(matrix, cutrows, cutcols)
-        if supply[lowestCostCell[0]] == demand[lowestCostCell[1]]:
-            allocatedCells.append({supply[lowestCostCell[0]]: lowestCostCell})
-            demand[lowestCostCell[1]] = 0
-            supply[lowestCostCell[0]] = 0
-            cutrows.append(lowestCostCell[0])
-            cutcols.append(lowestCostCell[1])
-        elif supply[lowestCostCell[0]] < demand[lowestCostCell[1]]:
-            #     means allocate supply value, make it 0 and reduce it from demand
-            allocatedCells.append({supply[lowestCostCell[0]]: lowestCostCell})
-            demand[lowestCostCell[1]] -= supply[lowestCostCell[0]]
-            supply[lowestCostCell[0]] = 0
-            cutrows.append(lowestCostCell[0])
-        else:
-            allocatedCells.append({demand[lowestCostCell[1]]: lowestCostCell})
-            supply[lowestCostCell[0]] -= demand[lowestCostCell[1]]
-            demand[lowestCostCell[1]] = 0
-            cutcols.append(lowestCostCell[1])
-
-    mincost = 0
-    print("Inital basic feasible solution:")
-    for entry in allocatedCells:
-        # each entry is a dict in itself so iterate through each item
-        for cost, cell in entry.items():
-            mincost += cost * matrix[int(cell[0])][int(cell[1])]
-            print("x" + str(cell) + " = " + str(cost))
-
-    print("Minimum cost  = " + str(mincost))
+    print("Minimum cost  = " + str(mintpcost))
 
 
 
@@ -182,6 +150,48 @@ def getCellForAllocation(matrix, cutrows, cutcols):
                 cell[0]=i
             i+=1
     return cell
+
+def calculateBFSusingVAM(matrix, demand, supply):
+    if sum(demand) != sum(supply):
+        print("!---Problem is UnBalanced---!")
+        return
+
+    cutrows = []
+    cutcols = []
+
+    allocatedCells = []
+    while sum(demand) != 0 and sum(supply) != 0:
+        lowestCostCell = getCellForAllocation(matrix, cutrows, cutcols)
+        if supply[lowestCostCell[0]] == demand[lowestCostCell[1]]:
+            allocatedCells.append({supply[lowestCostCell[0]]: lowestCostCell})
+            demand[lowestCostCell[1]] = 0
+            supply[lowestCostCell[0]] = 0
+            cutrows.append(lowestCostCell[0])
+            cutcols.append(lowestCostCell[1])
+        elif supply[lowestCostCell[0]] < demand[lowestCostCell[1]]:
+            #     means allocate supply value, make it 0 and reduce it from demand
+            allocatedCells.append({supply[lowestCostCell[0]]: lowestCostCell})
+            demand[lowestCostCell[1]] -= supply[lowestCostCell[0]]
+            supply[lowestCostCell[0]] = 0
+            cutrows.append(lowestCostCell[0])
+        else:
+            allocatedCells.append({demand[lowestCostCell[1]]: lowestCostCell})
+            supply[lowestCostCell[0]] -= demand[lowestCostCell[1]]
+            demand[lowestCostCell[1]] = 0
+            cutcols.append(lowestCostCell[1])
+
+    return allocatedCells
+
+def calculateMincost(matrix, allocatedCells):
+    mincost = 0
+    print("Inital basic feasible solution:")
+    for entry in allocatedCells:
+        # each entry is a dict in itself so iterate through each item
+        for cost, cell in entry.items():
+            mincost += cost * matrix[int(cell[0])][int(cell[1])]
+            print("x" + str(cell) + " = " + str(cost))
+
+    return mincost
 
 
 if __name__ == "__main__":
